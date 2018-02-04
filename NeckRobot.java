@@ -51,7 +51,7 @@ public class NeckRobot extends LinearOpMode {
 
     static State rightState = State.obstructed;
     static State leftState = State.obstructed;
-    static State forwardState = State.obstructed;
+    static State forwardState = State.clear;
     static State backwardState = State.obstructed;
 
     static rangeSensorPos rsPos = rangeSensorPos.forward;
