@@ -15,7 +15,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
-import java.util.Random;
 
 /**
  * Created by Josh on 1/29/2018.
@@ -39,7 +38,7 @@ public class NeckRobot extends LinearOpMode {
     DcMotor leftMotor, rightMotor;
 
     enum State {
-        clear, obstructed, start
+        clear, obstructed
     }
 
     enum rangeSensorPos {
@@ -50,10 +49,10 @@ public class NeckRobot extends LinearOpMode {
         goingForward, goingBackward, goingLeft, goingRight
     }
 
-    static State rightState = State.start;
-    static State leftState = State.start;
-    static State forwardState = State.start;
-    static State backwardState = State.start;
+    static State rightState = State.obstructed;
+    static State leftState = State.obstructed;
+    static State forwardState = State.obstructed;
+    static State backwardState = State.obstructed;
 
     static rangeSensorPos rsPos = rangeSensorPos.forward;
 
@@ -90,11 +89,10 @@ public class NeckRobot extends LinearOpMode {
         leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        waitForStart();
+        leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        //Make a random number generator object to decide start behavior
-        Random randomGenerator = new Random();
-        int startBehavior = randomGenerator.nextInt(4);
+        waitForStart();
 
 
         //Loop while stop isn't pressed
@@ -103,52 +101,24 @@ public class NeckRobot extends LinearOpMode {
             scanSurroundings(modernRoboticsI2cGyro);
 
             //Compose telemetry
-            telemetry.addLine().addData("Distance", rangeSensor.getDistance(DistanceUnit.CM));
-            telemetry.addLine().addData("Robot State", robotState);
-            telemetry.addLine().addData("Range Sensor Pos State", rsPos);
-            telemetry.addLine().addData("Forward State", forwardState);
-            telemetry.addLine().addData("Right State", rightState);
-            telemetry.addLine().addData("Backward State", backwardState);
-            telemetry.addLine().addData("Right State", rightState);
+            telemetry.addLine().addData("Distance (cm)", rangeSensor.getDistance(DistanceUnit.CM));
+            telemetry.addLine().addData("Tentative Robot State", robotState);
+            telemetry.addLine().addData("Range Sensor Pos", rsPos);
+            telemetry.addLine().addData("Tentative Forward State", forwardState);
+            telemetry.addLine().addData("Tentative Right State", rightState);
+            telemetry.addLine().addData("Tentative Backward State", backwardState);
+            telemetry.addLine().addData("Tentative Right State", rightState);
+            telemetry.addLine().addData("Robot Heading", angles.firstAngle);
+            telemetry.addLine().addData("Range Sensor Heading", modernRoboticsI2cGyro.getHeading());
             telemetry.update();
 
-
-            //If robot is in its starting state then move randomly
-            if (forwardState == State.start && backwardState == State.start &&
-                    rightState == State.start && leftState == State.start && opModeIsActive()) {
-
-                switch (startBehavior) {
-
-                    case 0:
-                        drive(1);
-                        break;
-
-                    case 1:
-                        drive(-1);
-                        break;
-
-                    case 2:
-                        turn(90, 0.5);
-                        drive(1);
-                        break;
-
-                    case 3:
-                        turn(-90, 0.5);
-                        drive(1);
-                        break;
-
-
-                }
-            }
 
             //If it wants to go forward, first make sure its orientated at 0 degrees then move forward
             if (robotState == rbtState.goingForward && forwardState == State.clear) {
 
-                if (angles.firstAngle > -5 && angles.firstAngle < 5) {
+                if (angles.firstAngle == 0) {
                     drive(1);
-                }
-
-                if (angles.firstAngle < -5 || angles.firstAngle > 5) {
+                } else {
                     turn (0, 0.5);
                     drive(1);
                 }
@@ -158,48 +128,37 @@ public class NeckRobot extends LinearOpMode {
             //If it wants to go backward, first make sure its orientated at 0 degrees and then move backward
             if (robotState == rbtState.goingBackward && backwardState == State.clear) {
 
-                if (angles.firstAngle > -5 && angles.firstAngle < 5) {
-                    drive(1);
-                }
-
-                if (angles.firstAngle < -5 || angles.firstAngle > 5) {
-                    turn (180, 0.5);
+                if (angles.firstAngle == 0) {
+                    drive(-1);
+                } else {
+                    turn (0, 0.5);
                     drive(-1);
                 }
             }
 
-            //If it wants to go right, first make sure its orientated at 90 degrees then move forward
+            //If it wants to go right, first make sure its orientated at -90 degrees then move forward
             if (robotState == rbtState.goingRight && rightState == State.clear) {
 
-                if (angles.firstAngle > 85 && angles.firstAngle < 95) {
+                if (angles.firstAngle == -90) {
                     drive(1);
-                }
-
-                if (angles.firstAngle < 85 || angles.firstAngle > 95) {
-                    turn (90, 0.5);
-                    drive(1);
-                }
-
-            }
-
-            //If it wants to go left, first make sure its orientated at -90 degrees and then move forward
-            if (robotState == rbtState.goingLeft && leftState == State.clear) {
-
-                if (angles.firstAngle > -85 && angles.firstAngle < -95) {
-                    drive(1);
-                }
-
-                if (angles.firstAngle < -85 || angles.firstAngle > -95) {
+                } else {
                     turn (-90, 0.5);
                     drive(1);
                 }
 
             }
 
+            //If it wants to go left, first make sure its orientated at 90 degrees and then move forward
+            if (robotState == rbtState.goingLeft && leftState == State.clear) {
 
+                if (angles.firstAngle == 90) {
+                    drive(1);
+                } else {
+                    turn (90, 0.5);
+                    drive(1);
+                }
+            }
         }
-
-
     }
 
 
@@ -280,8 +239,6 @@ public class NeckRobot extends LinearOpMode {
 
        while (!scanDone) {
 
-
-
            //If the range is more than 10, there's no object in the immediate area, so where ever its looking is clear
            if (rangeSensor.getDistance(DistanceUnit.CM) > 10) {
 
@@ -329,25 +286,6 @@ public class NeckRobot extends LinearOpMode {
                        break;
 
                }
-           }
-
-
-           //If the robot wants to move a direction and that direction is clear then no need to scan for obstructions until the next cycle
-
-           if (robotState == rbtState.goingForward && forwardState == State.clear) {
-               scanDone = true;
-           }
-
-           if (robotState == rbtState.goingBackward && backwardState == State.clear) {
-               scanDone = true;
-           }
-
-           if (robotState == rbtState.goingRight && rightState == State.clear){
-               scanDone = true;
-           }
-
-           if (robotState == rbtState.goingLeft && leftState == State.clear) {
-               scanDone = true;
            }
 
 
@@ -418,12 +356,12 @@ public class NeckRobot extends LinearOpMode {
            if (robotState == rbtState.goingRight && rightState == State.obstructed) {
 
                while (gyro.getHeading() < 180) {
-                   rangeSensorSwivel.setPower(-0.5);
+                   rangeSensorSwivel.setPower(0.5);
                }
                rangeSensorSwivel.setPower(0);
 
                while (gyro.getHeading() > 180) {
-                   rangeSensorSwivel.setPower(0.5);
+                   rangeSensorSwivel.setPower(-0.5);
                }
                rangeSensorSwivel.setPower(0);
 
@@ -435,18 +373,25 @@ public class NeckRobot extends LinearOpMode {
            }
 
 
+           //If the robot wants to move a direction and that direction is clear then no need to scan for obstructions until the next cycle
+
+           if (robotState == rbtState.goingForward && forwardState == State.clear) {
+               scanDone = true;
+           }
+
+           if (robotState == rbtState.goingBackward && backwardState == State.clear) {
+               scanDone = true;
+           }
+
+           if (robotState == rbtState.goingRight && rightState == State.clear){
+               scanDone = true;
+           }
+
+           if (robotState == rbtState.goingLeft && leftState == State.clear) {
+               scanDone = true;
+           }
+
        }
-
-
-
-
-
     }
-
-
-
     }
-
-
-
 
