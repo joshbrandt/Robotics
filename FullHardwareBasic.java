@@ -43,7 +43,7 @@ public class Hardware {
 
     HardwareMap hwMap;
 
-    public DcMotor frontRightMotor, frontLeftMotor, backRightMotor, backLeftMotor;
+    public DcMotor frontRightMotor, frontLeftMotor, backRightMotor, backLeftMotor, intakeRight, intakeLeft;
 
     BNO055IMU imu;
 
@@ -54,6 +54,7 @@ public class Hardware {
 
     enum turnDirection {clockWise, counterClockWise, notSet}
     enum Direction {left, right}
+    enum IntakeDirection {in, out}
 
     final int marginOfError = 15;
     final double slow = 0.2;
@@ -84,6 +85,8 @@ public class Hardware {
         frontLeftMotor = hwMap.get(DcMotor.class, "fl");
         backRightMotor = hwMap.get(DcMotor.class, "br");
         backLeftMotor = hwMap.get(DcMotor.class, "bl");
+        intakeRight = hwMap.get(DcMotor.class, "ir");
+        intakeLeft = hwMap.get(DcMotor.class, "il");
 
         potentiometer = hwMap.analogInput.get("pot");
 
@@ -120,6 +123,12 @@ public class Hardware {
         if (heading < 0) heading += 360;
         return heading;
     }
+    
+    public void intake(IntakeDirection direction) {
+        switch (direction) {
+        case in:
+        intakeRight
+        
 
     public int getPitch() {
 
