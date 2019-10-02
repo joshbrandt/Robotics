@@ -126,31 +126,31 @@ public class Hardware {
         if (heading < 0) heading += 360;
         return heading;
     }
-    
+
     public void intake(IntakeDirection direction, double motorPower) {
         switch (direction) {
-        case in:
-        intakeRight.setPower(motorPower);
-        intakeLeft.setPower(motorPower);
-        break;
-                
-        case out:
-        intakeRight.setPower(-motorPower);
-        intakeLeft.setPower(-motorPower);
-        break;
-                
+            case in:
+                intakeRight.setPower(motorPower);
+                intakeLeft.setPower(motorPower);
+                break;
+
+            case out:
+                intakeRight.setPower(-motorPower);
+                intakeLeft.setPower(-motorPower);
+                break;
+
             case off:
                 intakeRight.setPower(0);
                 intakeLeft.setPower(0);
                 break;
+        }
     }
-    }
-        
+
     public void intake(IntakeDirection direction) {
-        intake(IntakeDirection.direction, 1);
+        intake(direction, 1);
     }
-    
-        
+
+
 
     public int getPitch() {
 
@@ -490,15 +490,15 @@ public class Hardware {
 
     public void driveToStone() {
 
-         int angleToTurn = (int) Math.round(Math.toDegrees(Math.atan(robotDistanceToStone[0]/robotDistanceToStone[1])));
+        int angleToTurn = (int) Math.round(Math.toDegrees(Math.atan(robotDistanceToStone[0]/robotDistanceToStone[1])));
 
-         if (angleToTurn < 0) angleToTurn += 360;
+        if (angleToTurn < 0) angleToTurn += 360;
 
-         double distanceToTravel = Math.sqrt(Math.pow(robotDistanceToStone[0], 2) + Math.pow(robotDistanceToStone[1], 2));
+        double distanceToTravel = Math.sqrt(Math.pow(robotDistanceToStone[0], 2) + Math.pow(robotDistanceToStone[1], 2));
 
-         rotate(angleToTurn, 0.5, true);
+        rotate(angleToTurn, 0.5, true);
 
-         driveDistance(distanceToTravel, 0.5);
+        driveDistance(distanceToTravel, 0.5);
 
 
     }
