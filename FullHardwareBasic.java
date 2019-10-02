@@ -54,7 +54,7 @@ public class Hardware {
 
     enum turnDirection {clockWise, counterClockWise, notSet}
     enum Direction {left, right}
-    enum IntakeDirection {in, out}
+    enum IntakeDirection {in, out, off}
 
     final int marginOfError = 15;
     final double slow = 0.2;
@@ -94,11 +94,14 @@ public class Hardware {
 
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
         backRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        intakeLeft.setDirection(DcMotor.Direction.REVERSE);
 
         frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRightMotor.setZeroPowerBehavior(ZeroPowerBehavior.BRAKE);
-        backRightMotor.setZeroPowerBehavior(ZeroPowerBehavior.BRAKE);
+        frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        intakeRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        intakeLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -124,10 +127,29 @@ public class Hardware {
         return heading;
     }
     
-    public void intake(IntakeDirection direction) {
+    public void intake(IntakeDirection direction, double motorPower) {
         switch (direction) {
         case in:
-        intakeRight
+        intakeRight.setPower(motorPower);
+        intakeLeft.setPower(motorPower);
+        break;
+                
+        case out:
+        intakeRight.setPower(-motorPower);
+        intakeLeft.setPower(-motorPower);
+        break;
+                
+            case off:
+                intakeRight.setPower(0);
+                intakeLeft.setPower(0);
+                break;
+    }
+    }
+        
+    public void intake(IntakeDirection direction) {
+        intake(IntakeDirection.direction, 1);
+    }
+    
         
 
     public int getPitch() {
