@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Range;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
@@ -7,6 +9,7 @@ import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevTouchSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -55,6 +58,7 @@ public class Hardware {
     enum turnDirection {clockWise, counterClockWise, notSet}
     enum Direction {left, right}
     enum IntakeDirection {in, out, off}
+    enum color {blue, red, notSet}
 
     final int marginOfError = 15;
     final double slow = 0.2;
@@ -77,10 +81,13 @@ public class Hardware {
 
     ModernRoboticsI2cRangeSensor rangeSensorSide;
 
+    ColorSensor colorSensor;
+
     public void init(HardwareMap ahwMap) {
 
         hwMap = ahwMap;
 
+        //Map Motors
         frontRightMotor = hwMap.get(DcMotor.class, "fr");
         frontLeftMotor = hwMap.get(DcMotor.class, "fl");
         backRightMotor = hwMap.get(DcMotor.class, "br");
@@ -88,14 +95,15 @@ public class Hardware {
         intakeRight = hwMap.get(DcMotor.class, "ir");
         intakeLeft = hwMap.get(DcMotor.class, "il");
 
+        //Map Potentiometer
         potentiometer = hwMap.analogInput.get("pot");
 
-
-
+        //Reverse Direction
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
         backRightMotor.setDirection(DcMotor.Direction.REVERSE);
         intakeLeft.setDirection(DcMotor.Direction.REVERSE);
 
+        //Zero Power Behavior
         frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -103,6 +111,7 @@ public class Hardware {
         intakeRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intakeLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        //IMU Init
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
@@ -111,12 +120,16 @@ public class Hardware {
         parameters.loggingTag = "IMU";
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
+        //IMU Map
         imu = hwMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
 
+        //Front Range Sensor Map
         rangeSensorFront = hwMap.get(DistanceSensor.class, "rsF");
 
+        //Side Range Sensor Mao
         rangeSensorSide = hwMap.get(ModernRoboticsI2cRangeSensor.class, "rsS");
+
 
     }
 
@@ -127,7 +140,22 @@ public class Hardware {
         return heading;
     }
 
+    /**
+     * Sets the power of the intake wheels based on the direction and power inputted.
+     * @param direction The direction the intake will be going. Either in, out, or off.
+     * @param motorPower The motor power of the intake motors. Must be between 0 and 1.
+     */
     public void intake(IntakeDirection direction, double motorPower) {
+
+        //Range Clip
+        if (motorPower > 1) {
+            motorPower = 1;
+        }
+        else if (motorPower < 0) {
+            motorPower = 0;
+        }
+
+        //Set Motor Powers based on IntakeDirection
         switch (direction) {
             case in:
                 intakeRight.setPower(motorPower);
@@ -503,6 +531,24 @@ public class Hardware {
 
     }
 
+    /**
+     * This method gets the color the color sensor is reading.
+     * @return The color the sensor reads. Either red, blue or notSet.
+     */
+    public color getColor() {
+
+        if (colorSensor.red() >= 40 && colorSensor.blue() < 8) {
+            return color.red;
+        }
+        else if (colorSensor.red() < 8 && colorSensor.blue() >= 40) {
+            return color.blue;
+        }
+        else {
+            return color.notSet;
+        }
+
+    }
+
     //inches
     public void driveDistance(double distance, double speed) {
 
@@ -513,3 +559,4 @@ public class Hardware {
         driveToPos(wheelRevolutions, speed, true);
     }
 }
+
